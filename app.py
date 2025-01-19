@@ -10,6 +10,21 @@ def connect_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+# Initialize the database and create the table if it doesn't exist
+def initialize_db():
+    conn = sqlite3.connect("data.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS financials (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        category TEXT,
+        amount REAL,
+        date TEXT
+    )
+    """)
+    conn.commit()
+    conn.close()
+
 # API to fetch financial data
 @app.route('/api/financial_data', methods=['GET'])
 def get_financial_data():
@@ -41,4 +56,6 @@ def add_data():
     return jsonify({"message": "Data added successfully!"})
 
 if __name__ == '__main__':
+    # Initialize the database before starting the app
+    initialize_db()
     app.run(debug=True)
