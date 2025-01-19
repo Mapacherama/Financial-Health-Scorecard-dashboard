@@ -12,18 +12,23 @@ def connect_db():
 
 # Initialize the database and create the table if it doesn't exist
 def initialize_db():
-    conn = sqlite3.connect("data.db")
-    cursor = conn.cursor()
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS financials (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        category TEXT,
-        amount REAL,
-        date TEXT
-    )
-    """)
-    conn.commit()
-    conn.close()
+    try:
+        conn = sqlite3.connect("data.db")  # Connect to the database
+        cursor = conn.cursor()
+        # Create the table if it doesn't exist
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS financials (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            category TEXT,
+            amount REAL,
+            date TEXT
+        )
+        """)
+        conn.commit()
+    except sqlite3.DatabaseError as e:
+        print(f"Database error: {e}")
+    finally:
+        conn.close()
 
 # API to fetch financial data
 @app.route('/api/financial_data', methods=['GET'])
