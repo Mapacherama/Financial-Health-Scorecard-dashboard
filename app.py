@@ -30,6 +30,34 @@ def initialize_db():
     finally:
         conn.close()
 
+@app.route('/api/top_transactions', methods=['GET'])
+def get_top_transactions():
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    # Fetch largest income
+    cursor.execute("""
+        SELECT * FROM financials
+        WHERE amount > 0
+        ORDER BY amount DESC
+        LIMIT 1
+    """)
+    top_income = dict(cursor.fetchone())
+
+    # Fetch largest expense
+    cursor.execute("""
+        SELECT * FROM financials
+        WHERE amount < 0
+        ORDER BY amount ASC
+        LIMIT 1
+    """)
+    top_expense = dict(cursor.fetchone())
+
+    conn.close()
+
+    return jsonify({"top_income": top_income, "top_expense": top_expense})
+
+
 # API to fetch financial data with optional date filtering
 @app.route('/api/financial_data', methods=['GET'])
 def get_financial_data():
@@ -115,6 +143,25 @@ def add_data():
     conn.commit()
     conn.close()
     return jsonify({"message": "Data added successfully!"})
+
+@app.route('/api/recurring_transactions', methods=['GET'])
+def get_recurring_transactions():
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    # Group by category and count occurrences
+    cursor.execute("""
+        SELECT category, COUNT(*) as occurrences, SUM(amount) as total
+        FROM financials
+        GROUP BY category
+        HAVING occurrences > 1
+        ORDER BY occurrences DESC
+    """)
+    recurring = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+
+    return jsonify(recurring)
+
 
 @app.route('/api/savings_rate', methods=['GET'])
 def get_savings_rate():
