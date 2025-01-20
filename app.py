@@ -116,6 +116,26 @@ def add_data():
     conn.close()
     return jsonify({"message": "Data added successfully!"})
 
+@app.route('/api/savings_rate', methods=['GET'])
+def get_savings_rate():
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    # Fetch income and expenses
+    cursor.execute("SELECT SUM(amount) as total_income FROM financials WHERE amount > 0")
+    total_income = cursor.fetchone()['total_income'] or 0
+
+    cursor.execute("SELECT SUM(amount) as total_expenses FROM financials WHERE amount < 0")
+    total_expenses = abs(cursor.fetchone()['total_expenses'] or 0)
+
+    # Calculate savings rate
+    savings_rate = 0
+    if total_income > 0:
+        savings_rate = ((total_income - total_expenses) / total_income) * 100
+
+    conn.close()
+    return jsonify({"savings_rate": savings_rate})
+
 if __name__ == '__main__':
     # Initialize the database before starting the app
     initialize_db()
