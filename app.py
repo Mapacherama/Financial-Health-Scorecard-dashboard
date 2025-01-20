@@ -82,6 +82,24 @@ def get_summary():
     conn.close()
     return jsonify(summary)
 
+@app.route('/api/trends', methods=['GET'])
+def get_trends():
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    # Aggregate amounts by month
+    cursor.execute("""
+        SELECT strftime('%Y-%m', date) as month, 
+               SUM(amount) as total
+        FROM financials
+        GROUP BY month
+        ORDER BY month
+    """)
+    trends = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+
+    return jsonify(trends)
+
 # API to add data (for manual input or testing)
 @app.route('/api/add_data', methods=['POST'])
 def add_data():
