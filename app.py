@@ -63,28 +63,28 @@ def get_top_transactions():
 # API to fetch financial data with optional date filtering
 @app.route('/api/financial_data', methods=['GET'])
 def get_financial_data():
-    conn = connect_db()
-    cursor = conn.cursor()
-
-    # Fetch query parameters for date filtering
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
+    category = request.args.get('category')
 
-    # Base query
-    query = "SELECT * FROM financials"
+    query = "SELECT * FROM financials WHERE 1=1"
     params = []
 
-    # Apply date filters if provided
     if start_date and end_date:
-        query += " WHERE date BETWEEN ? AND ?"
-        params = [start_date, end_date]
+        query += " AND date BETWEEN ? AND ?"
+        params.extend([start_date, end_date])
     
+    if category:
+        query += " AND category = ?"
+        params.append(category)
+
+    conn = connect_db()
+    cursor = conn.cursor()
     cursor.execute(query, params)
     rows = cursor.fetchall()
-    data = [dict(row) for row in rows]
     conn.close()
-    
-    return jsonify(data)
+
+    return jsonify([dict(row) for row in rows])
 
 # API to fetch summary data
 @app.route('/api/summary', methods=['GET'])
