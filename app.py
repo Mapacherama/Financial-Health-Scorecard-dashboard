@@ -37,6 +37,10 @@ def get_top_transactions():
     conn = connect_db()
     cursor = conn.cursor()
 
+    # Initialize with None
+    top_income = None
+    top_expense = None
+
     # Fetch largest income
     cursor.execute("""
         SELECT * FROM financials
@@ -44,7 +48,9 @@ def get_top_transactions():
         ORDER BY amount DESC
         LIMIT 1
     """)
-    top_income = dict(cursor.fetchone())
+    result = cursor.fetchone()
+    if result:
+        top_income = dict(result)
 
     # Fetch largest expense
     cursor.execute("""
@@ -53,11 +59,16 @@ def get_top_transactions():
         ORDER BY amount ASC
         LIMIT 1
     """)
-    top_expense = dict(cursor.fetchone())
+    result = cursor.fetchone()
+    if result:
+        top_expense = dict(result)
 
     conn.close()
 
-    return jsonify({"top_income": top_income, "top_expense": top_expense})
+    return jsonify({
+        "top_income": top_income,
+        "top_expense": top_expense
+    })
 
 
 # API to fetch financial data with optional date filtering
