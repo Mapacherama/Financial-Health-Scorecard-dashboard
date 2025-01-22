@@ -185,6 +185,29 @@ def get_savings_rate():
     conn.close()
     return jsonify({"savings_rate": savings_rate})
 
+@app.route('/api/forecast', methods=['GET'])
+def forecast():
+    conn = connect_db()
+    df = pd.read_sql_query("""
+        SELECT strftime('%Y-%m', date) as month, SUM(amount) as total
+        FROM financials
+        GROUP BY month
+        ORDER BY month
+    """, conn)
+
+    # Perform linear regression
+    df['month_num'] = range(1, len(df) + 1)  # Add numerical month index
+    X = df[['month_num']]
+    y = df['total']
+
+    from sklearn.linear_model import LinearRegression
+    model = LinearRegression().fit(X, y)
+    future_months = [[len(df) + i] for i in range(1, 7)]
+    predictions = model.predict(future_months)
+
+    forecast = [{"month": f"Month {i}", "predicted_total": p} for i, p in enumerate(predictions, 1)]
+    return jsonify(forecast)
+
 if __name__ == '__main__':
     # Initialize the database before starting the app
     initialize_db()
