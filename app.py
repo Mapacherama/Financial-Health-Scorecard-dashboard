@@ -205,6 +205,8 @@ def forecast():
     future_months = [[len(df) + i] for i in range(1, 7)]
     predictions = model.predict(future_months)
 
+    print(predictions)
+
     forecast = [{"month": f"Month {i}", "predicted_total": p} for i, p in enumerate(predictions, 1)]
     return jsonify(forecast)
 
