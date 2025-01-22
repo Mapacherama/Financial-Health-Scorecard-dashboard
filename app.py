@@ -188,27 +188,38 @@ def get_savings_rate():
 @app.route('/api/forecast', methods=['GET'])
 def forecast():
     conn = connect_db()
-    df = pd.read_sql_query("""
-        SELECT strftime('%Y-%m', date) as month, SUM(amount) as total
-        FROM financials
-        GROUP BY month
-        ORDER BY month
-    """, conn)
+    try:
+        # Fetch and process financial data
+        df = pd.read_sql_query("""
+            SELECT strftime('%Y-%m', date) as month, SUM(amount) as total
+            FROM financials
+            GROUP BY month
+            ORDER BY month
+        """, conn)
 
-    # Perform linear regression
-    df['month_num'] = range(1, len(df) + 1)  # Add numerical month index
-    X = df[['month_num']]
-    y = df['total']
+        if df.empty:
+            return jsonify({"error": "No data available for forecasting"}), 400
 
-    from sklearn.linear_model import LinearRegression
-    model = LinearRegression().fit(X, y)
-    future_months = [[len(df) + i] for i in range(1, 7)]
-    predictions = model.predict(future_months)
+        # Prepare data for linear regression
+        df['month_num'] = range(1, len(df) + 1)  # Add numerical month index
+        X = df[['month_num']]
+        y = df['total']
 
-    print(predictions)
+        # Train linear regression model
+        from sklearn.linear_model import LinearRegression
+        model = LinearRegression().fit(X, y)
 
-    forecast = [{"month": f"Month {i}", "predicted_total": p} for i, p in enumerate(predictions, 1)]
-    return jsonify(forecast)
+        # Predict for the next 6 months
+        future_months = [[len(df) + i] for i in range(1, 7)]
+        predictions = model.predict(future_months)
+
+        # Format the response
+        forecast = [{"month": f"Month {i}", "predicted_total": round(p, 2)} for i, p in enumerate(predictions, 1)]
+        return jsonify(forecast)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
 
 if __name__ == '__main__':
     # Initialize the database before starting the app
