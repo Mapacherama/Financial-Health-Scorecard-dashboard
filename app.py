@@ -141,6 +141,45 @@ def get_trends():
 
     return jsonify(trends)
 
+@app.route('/api/investment_portfolio', methods=['GET', 'POST'])
+def investment_portfolio():
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    # Create the investments table if it doesn't exist
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS investments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            category TEXT,
+            amount REAL,
+            purchase_date TEXT,
+            current_value REAL
+        )
+    """)
+    
+    if request.method == 'POST':
+        # Add a new investment
+        data = request.json
+        cursor.execute("""
+            INSERT INTO investments (name, category, amount, purchase_date, current_value)
+            VALUES (?, ?, ?, ?, ?)
+        """, (data['name'], data['category'], data['amount'], data['purchase_date'], data['current_value']))
+        conn.commit()
+        conn.close()
+        return jsonify({"message": "Investment added successfully!"}), 201
+
+    elif request.method == 'GET':
+        # Retrieve portfolio data
+        cursor.execute("""
+            SELECT name, category, amount, purchase_date, current_value, 
+                   ROUND(((current_value - amount) / amount) * 100, 2) AS roi
+            FROM investments
+        """)
+        investments = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return jsonify({"investments": investments})
+
 # API to add data (for manual input or testing)
 @app.route('/api/add_data', methods=['POST'])
 def add_data():
