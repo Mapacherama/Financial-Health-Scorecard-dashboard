@@ -157,7 +157,7 @@ def investment_portfolio():
             current_value REAL
         )
     """)
-    
+
     if request.method == 'POST':
         # Add a new investment
         data = request.json
@@ -179,6 +179,23 @@ def investment_portfolio():
         investments = [dict(row) for row in cursor.fetchall()]
         conn.close()
         return jsonify({"investments": investments})
+    
+@app.route('/api/compound_growth', methods=['POST'])
+def compound_growth():
+    data = request.json
+    principal = data.get('principal', 0)
+    rate = data.get('rate', 0) / 100  # Convert percentage to decimal
+    years = data.get('years', 1)
+    contribution = data.get('contribution', 0)  # Optional yearly contribution
+
+    # Calculate compound growth
+    results = []
+    for year in range(1, years + 1):
+        # Compound formula with annual contributions
+        principal = principal * (1 + rate) + contribution
+        results.append({"year": year, "value": round(principal, 2)})
+
+    return jsonify({"growth": results})
 
 # API to add data (for manual input or testing)
 @app.route('/api/add_data', methods=['POST'])
