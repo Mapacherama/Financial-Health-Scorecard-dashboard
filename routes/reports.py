@@ -1,6 +1,5 @@
 from flask import Blueprint, send_file
 from fpdf import FPDF
-from db import connect_db
 from routes.insights import get_summary
 from routes.historical import get_historical_data
 
