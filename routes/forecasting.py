@@ -34,3 +34,21 @@ def forecast():
         return jsonify({"error": str(e)}), 500
     finally:
         conn.close()
+
+@forecasting_bp.route('/api/trends', methods=['GET'])
+def get_trends():
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    # Aggregate amounts by month
+    cursor.execute("""
+        SELECT strftime('%Y-%m', date) as month, 
+               SUM(amount) as total
+        FROM financials
+        GROUP BY month
+        ORDER BY month
+    """)
+    trends = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+
+    return jsonify(trends)        
