@@ -5,7 +5,7 @@ from db import connect_db
 historical_bp = Blueprint("historical", __name__)
 
 @historical_bp.route('/api/historical_data', methods=['GET'])
-def historical_data():
+def get_historical_data():
     conn = connect_db()
     cursor = conn.cursor()
 
