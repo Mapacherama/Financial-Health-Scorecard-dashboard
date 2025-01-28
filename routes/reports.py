@@ -21,22 +21,40 @@ def generate_report():
 
     # Summary Section
     pdf.set_font("Arial", "B", 12)
-    pdf.cell(200, 10, "📊 Financial Summary", ln=True)
+    pdf.cell(200, 10, "Financial Summary", ln=True)
     
     pdf.set_font("Arial", "", 11)
-    pdf.cell(200, 8, f"Total Income: ${summary['total_income']:.2f}", ln=True)
-    pdf.cell(200, 8, f"Total Expenses: ${summary['total_expenses']:.2f}", ln=True)
-    pdf.cell(200, 8, f"Net Balance: ${summary['net_balance']:.2f}", ln=True)
+    # Get the JSON data from the summary response
+    summary_data = summary.get_json()  # Convert Response to dictionary
+
+    # Now use the dictionary to access the values
+    pdf.cell(200, 8, f"Total Income: ${summary_data['total_income']:.2f}", ln=True)
+    pdf.cell(200, 8, f"Total Expenses: ${summary_data['total_expenses']:.2f}", ln=True)
+    pdf.cell(200, 8, f"Net Balance: ${summary_data['net_balance']:.2f}", ln=True)
     
     pdf.ln(10)
 
     # Historical Data Section
     pdf.set_font("Arial", "B", 12)
-    pdf.cell(200, 10, "📅 Historical Data (Monthly Breakdown)", ln=True)
+    pdf.cell(200, 10, "Historical Data (Monthly Breakdown)", ln=True)
     
     pdf.set_font("Arial", "", 11)
-    for data in historical_data:
-        pdf.cell(200, 8, f"{data['month']} - Income: ${data['total_income']:.2f} | Expenses: ${data['total_expenses']:.2f} | Savings: ${data['net_savings']:.2f}", ln=True)
+    historical_data_json = historical_data.get_json()
+    
+    # Check if the data is nested under a key
+    if isinstance(historical_data_json, dict):
+        data_to_iterate = historical_data_json.get('data', [])
+    else:
+        data_to_iterate = historical_data_json
+
+    for data in data_to_iterate:
+        if isinstance(data, dict):
+            pdf.cell(200, 8, 
+                f"{data.get('month', 'N/A')} - "
+                f"Income: ${data.get('total_income', 0):.2f} | "
+                f"Expenses: ${data.get('total_expenses', 0):.2f} | "
+                f"Savings: ${data.get('net_savings', 0):.2f}", 
+                ln=True)
 
     pdf.ln(10)
 
