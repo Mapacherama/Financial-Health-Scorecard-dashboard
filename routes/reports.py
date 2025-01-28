@@ -41,20 +41,16 @@ def generate_report():
     pdf.set_font("Arial", "", 11)
     historical_data_json = historical_data.get_json()
     
-    # Check if the data is nested under a key
-    if isinstance(historical_data_json, dict):
-        data_to_iterate = historical_data_json.get('data', [])
-    else:
-        data_to_iterate = historical_data_json
+    # Access the historical_data array directly
+    data_to_iterate = historical_data_json.get('historical_data', [])
 
     for data in data_to_iterate:
-        if isinstance(data, dict):
-            pdf.cell(200, 8, 
-                f"{data.get('month', 'N/A')} - "
-                f"Income: ${data.get('total_income', 0):.2f} | "
-                f"Expenses: ${data.get('total_expenses', 0):.2f} | "
-                f"Savings: ${data.get('net_savings', 0):.2f}", 
-                ln=True)
+        pdf.cell(200, 8, 
+            f"{data.get('month', 'N/A')} - "
+            f"Income: ${data.get('total_income', 0):.2f} | "
+            f"Expenses: ${data.get('total_expenses', 0):.2f} | "
+            f"Net Savings: ${data.get('net_savings', 0):.2f}", 
+            ln=True)
 
     pdf.ln(10)
 
