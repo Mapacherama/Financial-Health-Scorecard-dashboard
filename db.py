@@ -28,6 +28,16 @@ def initialize_db():
                 current_value REAL
             )
         """)
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS compound_growth (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            principal REAL,
+            rate REAL,
+            years INTEGER,
+            contribution REAL,
+            growth_data TEXT
+            )
+        """)
         conn.commit()
     except sqlite3.DatabaseError as e:
         print(f"Database error: {e}")
