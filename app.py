@@ -255,15 +255,6 @@ def get_recurring_transactions():
 
     return jsonify(recurring)
 
-@app.route('/api/compound_growth', methods=['GET'])
-def get_compound_growth():
-    conn = connect_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM compound_growth")
-    results = [dict(row) for row in cursor.fetchall()]
-    conn.close()
-    return jsonify({"saved_growths": results})
-
 
 @app.route('/api/savings_rate', methods=['GET'])
 def get_savings_rate():
