@@ -38,6 +38,17 @@ def initialize_db():
             growth_data TEXT
             )
         """)
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS financial_goals (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            goal_name TEXT NOT NULL,
+            target_amount REAL NOT NULL,
+            current_amount REAL DEFAULT 0.0,
+            due_date TEXT,
+            category TEXT
+        )
+    """)
         conn.commit()
     except sqlite3.DatabaseError as e:
         print(f"Database error: {e}")
