@@ -1,6 +1,6 @@
 from flask import Blueprint, send_file
 from fpdf import FPDF
-from routes.insights import get_summary
+from routes.insights import get_recurring_transactions, get_summary
 from routes.historical import get_historical_data
 from routes.financials import get_top_transactions
 from routes.investments import get_investment_portfolio
@@ -12,8 +12,8 @@ reports_bp = Blueprint("reports", __name__)
 def generate_report():
     summary = get_summary()
     historical_data = get_historical_data()
+    recurring_transactions = get_recurring_transactions()
     top_transactions = get_top_transactions()
-    investment_portfolio = get_investment_portfolio()
     
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
@@ -66,6 +66,16 @@ def generate_report():
     top_transactions_json = top_transactions.get_json()
     pdf.cell(200, 8, f"Largest Income: ${top_transactions_json.get('top_income', {}).get('amount', 0):.2f}", ln=True)
     pdf.cell(200, 8, f"Largest Expense: ${top_transactions_json.get('top_expense', {}).get('amount', 0):.2f}", ln=True)
+    pdf.ln(10)
+    
+    # Recurring Transactions Section
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(200, 10, "Recurring Transactions", ln=True)
+    
+    pdf.set_font("Arial", "", 11)
+    recurring_transactions_json = recurring_transactions.get_json()
+    for transaction in recurring_transactions_json:
+        pdf.cell(200, 8, f"{transaction.get('category', 'N/A')}: ${transaction.get('total', 0):.2f}", ln=True)
     pdf.ln(10)
     
     # Investment Portfolio Section
