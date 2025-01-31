@@ -9,6 +9,7 @@ from routes.historical import historical_bp
 from routes.insights import insights_bp
 from routes.investments import investments_bp
 from routes.reports import reports_bp
+from routes.financial_goals import financial_goals_bp
 
 app = Flask(__name__)
 CORS(app)
@@ -23,6 +24,7 @@ app.register_blueprint(historical_bp)
 app.register_blueprint(insights_bp)
 app.register_blueprint(investments_bp)
 app.register_blueprint(reports_bp)
+app.register_blueprint(financial_goals_bp)
 
 if __name__ == '__main__':
     app.run(debug=True)

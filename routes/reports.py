@@ -2,6 +2,8 @@ from flask import Blueprint, send_file
 from fpdf import FPDF
 from routes.insights import get_summary
 from routes.historical import get_historical_data
+from routes.financials import get_top_transactions
+from routes.investments import get_investment_portfolio
 
 # Create the Blueprint for reports
 reports_bp = Blueprint("reports", __name__)
@@ -10,6 +12,8 @@ reports_bp = Blueprint("reports", __name__)
 def generate_report():
     summary = get_summary()
     historical_data = get_historical_data()
+    top_transactions = get_top_transactions()
+    investment_portfolio = get_investment_portfolio()
     
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
@@ -53,6 +57,48 @@ def generate_report():
             ln=True)
 
     pdf.ln(10)
+    
+    # Top Transactions Section
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(200, 10, "Top Transactions", ln=True)
+    
+    pdf.set_font("Arial", "", 11)
+    top_transactions_json = top_transactions.get_json()
+    pdf.cell(200, 8, f"Largest Income: ${top_transactions_json.get('top_income', {}).get('amount', 0):.2f}", ln=True)
+    pdf.cell(200, 8, f"Largest Expense: ${top_transactions_json.get('top_expense', {}).get('amount', 0):.2f}", ln=True)
+    pdf.ln(10)
+    
+    # Investment Portfolio Section
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(200, 10, "Investment Portfolio", ln=True)
+    
+    pdf.set_font("Arial", "", 11)
+    investment_portfolio_json = get_investment_portfolio().json
+    investments = investment_portfolio_json.get("investments", [])
+    # Display total investment amount
+    total_investment = sum(item.get("amount", 0) for item in investments)
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(200, 8, f"Total Investments: ${total_investment:,.2f}", ln=True)
+    pdf.ln(5)
+
+    # Table Header
+    pdf.set_font("Arial", "B", 11)
+    pdf.cell(50, 8, "Investment Name", border=1)
+    pdf.cell(40, 8, "Category", border=1)
+    pdf.cell(30, 8, "Amount ($)", border=1, align="R")
+    pdf.cell(35, 8, "Current Value ($)", border=1, align="R")
+    pdf.cell(25, 8, "ROI (%)", border=1, align="R")
+    pdf.ln()
+
+    # Investment Details
+    pdf.set_font("Arial", "", 10)
+    for investment in investments:
+        pdf.cell(50, 8, investment.get("name", "N/A"), border=1)
+        pdf.cell(40, 8, investment.get("category", "N/A"), border=1)
+        pdf.cell(30, 8, f"${investment.get('amount', 0):,.2f}", border=1, align="R")
+        pdf.cell(35, 8, f"${investment.get('current_value', 0):,.2f}", border=1, align="R")
+        pdf.cell(25, 8, f"{investment.get('roi', 0):,.2f}%", border=1, align="R")
+        pdf.ln()
 
     # Save PDF
     pdf_path = "financial_report.pdf"
