@@ -21,12 +21,10 @@ def initialize_db():
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS budgets (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
             category TEXT NOT NULL,
             allocated_amount REAL NOT NULL,
             spent_amount REAL DEFAULT 0.0,
             month_year TEXT NOT NULL,
-            FOREIGN KEY (user_id) REFERENCES users(id)
             )
         """)
         cursor.execute("""
