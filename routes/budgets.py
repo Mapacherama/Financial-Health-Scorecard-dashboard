@@ -17,6 +17,22 @@ def create_budget(user_id: int, category: str, allocated_amount: float, month_ye
     
     return {"message": f"Budget for {category} in {month_year} created successfully"}
 
+def get_budget_by_category(category: str, month_year: str):
+    """
+    Retrieve budget details for a specific category and month.
+    """
+    conn = connect_db()
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        SELECT * FROM budgets WHERE category = ? AND month_year = ?
+    """, (category, month_year))
+    
+    budget = cursor.fetchone()
+    conn.close()
+    
+    return {"budget": dict(budget)} if budget else {"message": f"No budget found for {category} in {month_year}"}
+
 def check_budget_status(category: str, month_year: str):
     """
     Check if the budget is exceeded.
